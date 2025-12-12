@@ -15,7 +15,11 @@ function AppPage({ setIsAuthenticated }) {
   };
 
   return (
-    <div className="fixed inset-0 min-h-screen bg-blue-500 p-10">
+    <div className="fixed inset-0 min-h-screen bg-blue-500 p-10"
+    style={{
+      backgroundImage: "url('/images/AppPage-image.jpg')"
+    }}
+    >
 
   {/* Logout button */}
   <button
@@ -25,7 +29,7 @@ function AppPage({ setIsAuthenticated }) {
     Log Out
   </button>
 
-  <h1 className="text-2xl font-bold mb-6 text-white">Medicine Reminder</h1>
+  <h1 className="text-2xl font-bold mb-6 text-black">Medicine Reminder</h1>
 
   {/* ✅ Two-column layout wrapper */}
   <div className="flex gap-6 max-w-5xl mx-auto">

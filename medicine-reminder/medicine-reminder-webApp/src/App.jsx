@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 
 import AuthPage from "./pages/AuthPage";
 import AppPage from "./pages/AppPage";
+import ContraIndicationsPage from "./pages/ContraIndicationsPage";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -43,6 +44,7 @@ function App() {
 
         {/* Catch-all */}
         <Route path="*" element={<Navigate to="/" />} />
+       <Route path="/contra-indications/:name" element={<ContraIndicationsPage />} /> 
       </Routes>
     </Router>
   );

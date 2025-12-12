@@ -4,48 +4,59 @@ import useMessageStore from './store/useMessageStore';
 
 function ReminderChecker() {
   const medicines = useMedicineStore((state) => state.medicines);
+  const removeMedicine = useMedicineStore((state) => state.removeMedicine);
   const setMessage = useMessageStore((state) => state.setMessage);
 
   useEffect(() => {
-    // Request permission for desktop notifications
     if ('Notification' in window && Notification.permission !== 'granted') {
       Notification.requestPermission();
     }
 
     const interval = setInterval(() => {
       const now = new Date();
-      const currentMinutes = now.getHours() * 60 + now.getMinutes();
-      const today = now.toDateString();
 
       medicines.forEach((med) => {
         if (!med.takenTimes) med.takenTimes = {};
-        if (!med.lastNotified) med.lastNotified = {};
+
+        // Stop reminders if treatment duration ended
+        if (med.duration && med.startDate) {
+          const start = new Date(med.startDate);
+          const daysPassed = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+          if (daysPassed >= med.duration) {
+            removeMedicine(med.id);
+            return;
+          }
+        }
 
         med.times.forEach((time) => {
-          const [h, m] = time.split(':').map(Number);
-          const medMinutes = h * 60 + m;
+          const [hours, minutes] = time.split(':').map(Number);
 
-          // Skip if medicine is already marked as taken for this time
+          // Create a scheduled Date object for today
+          let scheduledTime = new Date();
+          scheduledTime.setHours(hours, minutes, 0, 0);
+
+          // If scheduled time already passed today, schedule it for tomorrow
+          if (scheduledTime < now) {
+            scheduledTime.setDate(scheduledTime.getDate() + 1);
+          }
+
+          // Skip if taken
           if (med.takenTimes[time]) return;
 
-          // Trigger reminder if current time >= scheduled time
-          if (currentMinutes >= medMinutes) {
+          // Trigger reminder only if current time >= scheduledTime
+          if (now >= scheduledTime) {
             const messageText = `Please take ${med.posology} of ${med.name}`;
 
-            // Show in-app Snackbar
+            // In-app snackbar
             setMessage(messageText, 'success');
 
-            // Speak reminder if not already speaking
+            // Speech
             if ('speechSynthesis' in window && !med.speaking) {
               const utterance = new SpeechSynthesisUtterance(messageText);
               utterance.rate = 1;
               utterance.pitch = 1;
-
-              med.speaking = true; // flag to prevent overlapping speech
-              utterance.onend = () => {
-                med.speaking = false; // allow speech again next interval
-              };
-
+              med.speaking = true;
+              utterance.onend = () => (med.speaking = false);
               window.speechSynthesis.speak(utterance);
             }
 
@@ -53,16 +64,13 @@ function ReminderChecker() {
             if ('Notification' in window && Notification.permission === 'granted') {
               new Notification('Medicine Reminder', { body: messageText });
             }
-
-            // Keep track of last notified time (optional)
-            med.lastNotified[time] = today;
           }
         });
       });
-    }, 10000); // check every 10 seconds for repeated reminders
+    }, 10000); // repeat every 10 seconds
 
     return () => clearInterval(interval);
-  }, [medicines, setMessage]);
+  }, [medicines, setMessage, removeMedicine]);
 
   return null;
 }

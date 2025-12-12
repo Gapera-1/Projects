@@ -1,15 +1,21 @@
 import { create } from 'zustand';
 
 const useMedicineStore = create((set, get) => ({
-  // Load medicines from localStorage or start with empty array
   medicines: JSON.parse(localStorage.getItem('medicines')) || [],
 
   addMedicine: (medicine) => {
     set((state) => {
       const newMeds = [
         ...state.medicines,
-        { ...medicine, lastNotified: {}, takenTimes: {} },
+        {
+          ...medicine,
+          id: Date.now(),                // ensure unique ID
+          startDate: new Date().toDateString(),  // needed for duration
+          lastNotified: {},
+          takenTimes: {},
+        },
       ];
+
       localStorage.setItem('medicines', JSON.stringify(newMeds));
       return { medicines: newMeds };
     });
@@ -30,11 +36,11 @@ const useMedicineStore = create((set, get) => ({
           ? { ...m, takenTimes: { ...m.takenTimes, [time]: true } }
           : m
       );
+
       localStorage.setItem('medicines', JSON.stringify(newMeds));
       return { medicines: newMeds };
     });
 
-    // Stop any ongoing speech immediately
     window.speechSynthesis.cancel();
   },
 }));
