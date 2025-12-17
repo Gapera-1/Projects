@@ -22,13 +22,17 @@ function Snackbar() {
     return () => unsubscribe();
   }, []);
 
+  if (!message) {
+    return null;
+  }
+
   return (
     <div
-      className={`fixed bottom-4 left-1/2 transform -translate-x-1/2 ${
-        messageType === 'success' ? 'bg-green-700' : 'bg-red-700'
-      } bg-opacity-80 p-4 rounded text-white`}
+      className={`fixed bottom-6 left-1/2 z-50 -translate-x-1/2 px-5 py-3 rounded-full shadow-lg text-sm font-medium text-white
+        transform transition-all duration-300 ease-out
+        ${messageType === 'success' ? 'bg-green-600/95' : 'bg-red-600/95'}`}
     >
-      {message && <p>{message}</p>}
+      <p>{message}</p>
     </div>
   );
 }

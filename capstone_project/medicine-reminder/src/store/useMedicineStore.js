@@ -4,6 +4,13 @@ const useMedicineStore = create((set, get) => ({
   // Load medicines from localStorage or start with empty array
   medicines: JSON.parse(localStorage.getItem('medicines')) || [],
 
+  setMedicines: (meds) => {
+    set(() => {
+      localStorage.setItem('medicines', JSON.stringify(meds));
+      return { medicines: meds };
+    });
+  },
+
   addMedicine: (medicine) => {
     set((state) => {
       const newMeds = [
